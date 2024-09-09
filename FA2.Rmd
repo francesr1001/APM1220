@@ -1,0 +1,122 @@
+---
+title: "FA2"
+author: "Frances Aneth Rosales"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(broom)
+library(dplyr)
+library(knitr)
+library(ggplot2)
+
+
+```
+
+
+```{r, include=FALSE}
+
+data_polinterest <- read.csv("C:/Users/asus/Documents/ALL FEU FILES/FEU FOLDER 7/APPLIED MULTIVARIATE/Political Interest.csv")
+
+head(data_polinterest)
+#colnames(data_polinterest)
+
+
+
+```
+<br><br><br>
+
+# Creating Two-Way Anova by Gender and Education Level
+
+```{r educ_gender}
+
+data_polinterest$gender <- as.factor(data_polinterest$gender)
+data_polinterest$education_level <- as.factor(data_polinterest$education_level)
+anova_result <- aov(political_interest ~ gender * education_level, data = data_polinterest)
+
+
+anova_table <- tidy(anova_result)
+
+kable(anova_table, caption = "Two-Way ANOVA of Gender and Education Level")
+```
+<br><br>
+As shown, we can see a that the <b> P.Value of our ANOVA is significant </b>. Stated that the p.value of gender accumulates 0.1870433, and an approximately 0 in education_level.
+It is also visible that smaller residual mean square and sum of squares would suggest that a significant amount of the variability is explained by the model.
+
+
+<br><br><br>
+
+\newpage
+# Two-Way Anova of Gender and Education Level
+```{r educ1_gender, include=FALSE}
+data_polinterest$education_level <- factor(data_polinterest$education_level,
+                                           levels = c(1, 2, 3),
+                                           labels = c("school", "college", "university"))
+
+data_polinterest$gender <- factor(data_polinterest$gender,
+                                  levels = c(1, 2),
+                                  labels = c("male", "female"))
+
+library(tidyverse)
+
+summary(data_polinterest$education_level)
+sum(is.na(data_polinterest$education_level))
+
+data_polinterest <- data_polinterest %>% drop_na(education_level)
+data_polinterest <- data_polinterest[!is.na(data_polinterest$education_level), ]
+
+data_polinterest$education_level[is.na(data_polinterest$education_level)] <- "Unknown"
+
+```
+
+
+```{r educ1_genderplot}
+ggplot(data_polinterest, aes(x = education_level, y = political_interest, fill = education_level)) +
+  geom_boxplot() +
+  labs(
+    title = "Political Interest by Education Level",
+    x = "Education Level",
+    y = "Political Interest"
+  ) +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set3")
+  
+  
+```
+
+<br><br>
+It was shown that the mean of the Political Interest accumulate the highest with Students in University Education level, this is followed by College, and then School.
+The University shows an Upper Quantile Boxplot in which its mean is above 60 with respect with the political Interest of the Students.
+College also shows an Upper Quantile in which on the other hand beyond 40. Lastly, School in which on the other hand has closely Lower Quantile scale below the mean 40.
+
+\newpage
+
+# Descriptives Statistics
+```{r educ1and2_gender}
+
+
+library(dplyr)
+
+descriptive_stats <- data_polinterest %>%
+  group_by(gender, education_level) %>%
+  summarise(
+    N = n(),
+    Mean = mean(political_interest, na.rm = TRUE),
+    SD = sd(political_interest, na.rm = TRUE),
+    SE = SD / sqrt(N),
+    CV = SD / Mean
+  )
+
+#print(descriptive_stats)
+
+kable(descriptive_stats, caption = "Descriptive Statistics by Gender and Education Level")
+```
+<br><br>
+As also shown, our analysis can show that student in<b> University accumulates the highest in its Mean equivalency </b>. As such, Male-University accumulate 64.10 of mean interest in politics while Female-University shows 58.00 of Mean interest. 
+
+By compounding, we have shown that our assumption in above Box plot and Plotting correlate with data shown in our Descriptive Analysis.
